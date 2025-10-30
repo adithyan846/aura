@@ -1,0 +1,10 @@
+# Goal
+float64 latitude
+float64 longitude
+float64 altitude
+---
+# Result
+bool success
+string message
+---
+# Feedback (None for this action, but the section must exist)

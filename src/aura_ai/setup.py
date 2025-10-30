@@ -24,6 +24,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
-        ],
+            'ai_node = aura_ai.ai_node:main',
+            ],
+
     },
 )

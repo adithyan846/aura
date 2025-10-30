@@ -13,7 +13,7 @@ class PixhawkNode(Node):
         super().__init__('pixhawk_node')
 
         # --- Parameters ---
-        self.declare_parameter('connection_string', '/dev/ttyAMA0') # Default for RPi 5 hardware UART
+        self.declare_parameter('connection_string', '/dev/ttyACM0') # Default for RPi 5 hardware UART
         self.declare_parameter('baud_rate', 57600)
         self.declare_parameter('poll_rate_hz', 20.0) # Rate to poll for MAVLink msgs
         self.declare_parameter('stream_rate_hz', 10.0) # Rate to request MAVLink streams

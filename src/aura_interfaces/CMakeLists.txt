@@ -11,6 +11,9 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Telemetry.msg"
+  "msg/Detection.msg"
+  "msg/FlightCommand.msg"
+  "action/MoveToGPS.action"
   # Add other .msg, .srv, or .action files here
 )
 
@@ -33,6 +36,6 @@ endif()
 ament_package()
 # This is needed for ROS 2 Python nodes to find the built messages
 install(
-  DIRECTORY "msg"
+  DIRECTORY "msg" "action"
   DESTINATION share/${PROJECT_NAME}/msg
 )

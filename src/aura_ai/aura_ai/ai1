@@ -1,0 +1,132 @@
+#!/usr/bin/env python3
+import rclpy
+from rclpy.node import Node
+from sensor_msgs.msg import Image, CompressedImage # Import Image
+from aura_interfaces.msg import Detection, Telemetry
+from cv_bridge import CvBridge
+import cv2
+from ultralytics import YOLO # Import YOLO
+
+class AiNode(Node):
+    def __init__(self):
+        super().__init__('ai_node')
+        self.get_logger().info('AI Node starting. Loading YOLOv8 model...')
+        
+        # --- Configuration Parameters ---
+        # NOTE: You must place your YOLOv8-nano weights file (e.g., yolov8n.pt) somewhere
+        # and provide the correct path here.
+        model_path = '/home/akari/aura/automation/yolo/best_ncnn_model' # <--- CHANGE THIS PATH!
+        
+        # --- AI Model Initialization ---
+        try:
+            self.model = YOLO(model_path)
+            self.get_logger().info('YOLOv8 model loaded successfully.')
+        except Exception as e:
+            self.get_logger().error(f'Failed to load YOLO model: {e}')
+            # Stop node initialization if model fails to load
+            raise RuntimeError("YOLO model loading failed.")
+
+        # Bridge to convert ROS Images to OpenCV
+        self.bridge = CvBridge()
+        
+        # Store latest telemetry data
+        self.current_telemetry = Telemetry()
+        self.current_telemetry.latitude = 0.0
+        self.current_telemetry.longitude = 0.0
+        
+        # --- Subscribers ---
+        # Subscribes to the raw camera feed from camera_ros. We assume the camera_node
+        # is remapped to the /visuals namespace, publishing /visuals/image_raw.
+        self.image_subscriber = self.create_subscription(
+            Image,
+            '/visuals/image_raw', # Subscribing to the topic published by camera_ros
+            self.image_callback,
+            1) # QoS set to 1 for low latency
+        
+        # Subscribes to the drone's telemetry
+        self.telemetry_subscriber = self.create_subscription(
+            Telemetry,
+            '/telemetry',
+            self.telemetry_callback,
+            10)
+            
+        # --- Publisher ---
+        # Publishes detection results
+        self.detection_publisher = self.create_publisher(
+            Detection,
+            '/detection',
+            10)
+        
+        self.get_logger().info('AI Node initialized and ready to subscribe to /visuals/image_raw.')
+
+
+    def telemetry_callback(self, msg):
+        # Simply store the latest telemetry message
+        self.current_telemetry = msg
+
+    def image_callback(self, msg):
+        # 1. Convert ROS Image message to OpenCV image
+        try:
+            # Convert to BGR8 format for OpenCV/YOLO
+            cv_frame = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+        except Exception as e:
+            self.get_logger().error(f'Failed to convert image: {e}')
+            return
+            
+        # 2. --- Run YOLOv8 Inference ---
+        # The 'stream=True' argument can sometimes improve performance
+        # by treating the input as a stream.
+        # NOTE: YOLOv8 automatically resizes the input image for the model.
+        results = self.model(cv_frame, verbose=False, stream=True)
+        
+        # 3. Process and publish results
+        for r in results:
+            # r.boxes is the bounding box object from Ultralytics
+            for box in r.boxes:
+                # Convert normalized box coordinates (xywhn) to pixel coordinates (xywh)
+                # For simplicity, we'll use xywh (center_x, center_y, w, h)
+                x_center, y_center, w, h = box.xywh[0].cpu().numpy()
+                
+                # Get prediction data
+                label_id = int(box.cls[0].cpu().numpy())
+                confidence = float(box.conf[0].cpu().numpy())
+                label = self.model.names.get(label_id, f"Class_{label_id}")
+
+                # Create a new Detection message
+                detection_msg = Detection()
+                
+                # Populate from YOLOv8 inference
+                detection_msg.label = label
+                detection_msg.confidence = confidence
+                detection_msg.x = x_center    # Center X (pixel)
+                detection_msg.y = y_center    # Center Y (pixel)
+                detection_msg.width = w       # Width (pixel)
+                detection_msg.height = h      # Height (pixel)
+                
+                # Populate from stored telemetry (last known location)
+                detection_msg.latitude = self.current_telemetry.latitude
+                detection_msg.longitude = self.current_telemetry.longitude
+                
+                # Publish the populated message
+                self.detection_publisher.publish(detection_msg)
+                
+                # Optional logging
+                self.get_logger().debug(f'Detected: {label} @ {confidence:.2f} confidence.')
+        
+
+def main(args=None):
+    rclpy.init(args=args)
+    try:
+        ai_node = AiNode()
+        rclpy.spin(ai_node)
+    except RuntimeError:
+        # Catch exception from failed model loading
+        pass
+    finally:
+        # Cleanup
+        if 'ai_node' in locals():
+             ai_node.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
