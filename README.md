@@ -1,95 +1,61 @@
-# **Aura ROS**
-**An intelligent aerial robotics framework for disaster management and field operations.**
+# Aura ROS
+### An intelligent aerial robotics framework for disaster management and field operations.
 
-Aura ROS integrates real-time perception, flight telemetry, and onboard AI vision into a cohesive system built for the Raspberry Pi 5 and Pixhawk-based drones. It’s designed as a modular ROS 2 (Jazzy Jalisco) ecosystem capable of autonomous detection, communication, and coordination across complex mission profiles.
+| | |
+| :--- | :--- |
+| **ROS 2 Distribution** | **Jazzy Jalisco** |
+| **Platform** | **Raspberry Pi 5** on Ubuntu 24.04 |
+| **Primary Use** | Disaster Response & Field Operations |
 
----
+[![ROS Build](https://img.shields.io/badge/ROS%202-Jazzy-blue)](https://ros.org/)
+[![Platform](https://img.shields.io/badge/Platform-RPi%205%20%7C%20Ubuntu%2024.04-orange)](https://www.raspberrypi.com/products/raspberry-pi-5/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## **System Overview**
-
-Aura ROS is developed as part of the *Aura Drone Project*, a next-generation disaster-response UAV platform.  
-The ROS layer acts as the central nervous system — handling sensor integration, perception, decision logic, and telemetry relay between the flight controller (Pixhawk) and onboard AI modules.
-
----
-
-## **Core Features**
-
-| Category | Description |
-|-----------|--------------|
-| **Hardware Platform** | Raspberry Pi 5 running Ubuntu 24.04 |
-| **Flight Controller** | Pixhawk 2.4.8 communicating via MAVLink |
-| **ROS Distribution** | ROS 2 Jazzy Jalisco |
-| **AI Module** | YOLOv11n (custom-trained) for human and object detection |
-| **Telemetry Node** | Interfaces with Pixhawk to stream flight data, GPS, and system status |
-| **AI Node** | Processes real-time camera feed and publishes detections |
-| **Camera Node** | Handles image acquisition using the RPi camera (libcamera or V4L2 pipeline) |
-| **Bringup System** | Unified launch mechanism to start all Aura subsystems |
-| **Modular Design** | Each functional block is an independent ROS 2 package for clarity and reusability |
+Aura ROS integrates **real-time perception**, **flight telemetry**, and **onboard AI vision** into a cohesive system built for the Raspberry Pi 5 and Pixhawk-based drones. It is designed as a **modular ROS 2 ecosystem** capable of autonomous detection, communication, and coordination across complex mission profiles.
 
 ---
 
-## **Repository Structure**
+## System Overview
 
-├── src/
-│ ├── aura_ai/ # AI node (YOLOv11n detection and inference)
-│ ├── aura_camera/ # Camera node for RPi video feed
-│ ├── aura_telemetry/ # MAVLink-based telemetry and GPS data node
-│ ├── aura_bringup/ # Unified launch files and configuration
-│ └── aura_interfaces/ # Custom ROS message definitions (Detection, Telemetry)
+Aura ROS is the core software layer for the **Aura Drone Project**, a next-generation UAV platform for disaster response.
 
+The **ROS 2 layer** acts as the central nervous system, managing the flow of data between the drone's hardware and software components:
 
+* **Sensor Integration:** Handles image feeds and GPS data.
+* **Perception:** Processes raw data using the AI module.
+* **Decision Logic:** Relays processed information to the flight controller.
+* **Telemetry:** Streams critical flight data back to a ground station.
 
 ---
 
-## **Installation**
+## Core Features
 
-### 1. System Requirements
-- Ubuntu 24.04 (64-bit)
-- Raspberry Pi 5
-- ROS 2 Jazzy Jalisco
-- Python 3.10+
-- OpenCV, cv_bridge, and ultralytics dependencies installed
+| Feature | Component | Description |
+| :--- | :--- | :--- |
+| **Embedded Platform** | Raspberry Pi 5 | Runs **Ubuntu 24.04 (64-bit)** for powerful edge processing. |
+| **Flight Control** | Pixhawk 2.4.8 | Communicates via **MAVLink** for reliable data exchange. |
+| **AI Vision** | **YOLOv11n** | Custom-trained model for efficient human and object detection. |
+| **Communication** | `aura_telemetry` | Interfaces with Pixhawk to stream GPS and system status. |
+| **Modularity** | Independent Packages | Each functional block is an independent ROS 2 package for isolated testing. |
 
-### 2. Clone the Workspace
+---
+
+## System Prerequisites
+
+Ensure your Raspberry Pi 5 is set up with the following:
+
+* **Operating System:** Ubuntu 24.04 (64-bit)
+* **ROS 2:** Jazzy Jalisco
+* **Python:** Python 3.10+
+* **Dependencies:** **OpenCV**, **cv\_bridge**, **ultralytics**, and **pymavlink** (for MAVLink communication).
+
+---
+
+## Installation Guide
+
+### 1. Clone the Workspace
+Create and navigate to your ROS 2 workspace directory.
 ```bash
 mkdir -p ~/aura_ws/src
 cd ~/aura_ws/src
-git clone https://github.com/adithyan846/aura.git
-cd ~/aura_ws
-colcon build
-source install/setup.bash
-
-
-Development Notes
-
-The AI node is optimized for edge inference using YOLOv11n (custom trained weights).
-
-Telemetry communication uses MAVLink over serial (typically /dev/ttyAMA0 or /dev/ttyUSB0).
-
-ROS launch files are designed to bring up all systems in a controlled order.
-
-Modular packages ensure plug-and-play debugging and isolated testing on the Raspberry Pi.
-
-Roadmap
-
- Multi-drone coordination layer
-
- Fail-safe and recovery node
-
- Integration with ground base station via radio/4G link
-
- Mission planner interface
-
- Onboard decision and navigation AI
-
-
- License
-
-This project is released under the MIT License unless otherwise specified.
-© 2025 Aura Research Group. All rights reserved.
-
-Citations
-
-If you reference Aura ROS in academic or technical work, please cite it as:
-
-Aura ROS: A Modular AI-Integrated Drone Framework for Disaster Response.
+git clone [https://github.com/adithyan846/aura.git](https://github.com/adithyan846/aura.git)
