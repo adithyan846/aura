@@ -59,3 +59,31 @@ Create and navigate to your ROS 2 workspace directory.
 mkdir -p ~/aura_ws/src
 cd ~/aura_ws/src
 git clone [https://github.com/adithyan846/aura.git](https://github.com/adithyan846/aura.git)
+cd ~/aura_ws
+# Install ROS package dependencies
+rosdep install -i --from-path src --rosdistro jazzy -y
+# Install required Python libraries
+pip install opencv-python ultralytics pymavlink
+cd ~/aura_ws
+colcon build --symlink-install
+```
+## Usage
+
+### 1. Source the Workspace
+Always source the workspace in every new terminal session.
+```bash
+source ~/aura_ws/install/setup.bash
+```
+### 2. Launch the Full System
+ Use the unified launch file to start all nodes, including the camera, telemetry, and AI modules, in the correct operational order.
+ ```bash
+
+
+
+
+aura_ws/src/aura/
+├── aura_ai/          # YOLOv11n AI detection and inference node
+├── aura_bringup/     # Unified launch files and configuration
+├── aura_camera/      # RPi camera video feed handler node
+├── aura_interfaces/  # Custom ROS message definitions (e.g., Detection, Telemetry)
+└── aura_telemetry/   # MAVLink-based telemetry and GPS data node
